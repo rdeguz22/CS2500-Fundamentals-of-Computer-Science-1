@@ -21,6 +21,24 @@ class ArtificialPlayer(ui: UserInterface) : Player(ui) {
     override fun incorporateFeedback(guess: String, matchString: String) {
         // Add new constraints based on our last guess and the resulting
         // matchString, as described in Instructions.md.
+        for (i in guess.indices) {
+            val char = guess[i]
+            val match = matchString[i]
+            when (match) {
+                '*' -> {
+                    constraints.add { word -> word[i] == char }
+                }
+
+                '+' -> {
+                    constraints.add { word -> word.contains(char) && word[i] != char }
+                }
+
+                else -> {
+                    if (constraints.contains { it.contains(char) }) constraints.add { word -> word[i] != char }
+                    else constraints.add { word -> !word.contains(char) }
+                }
+            }
+        }
 
     }
 }
