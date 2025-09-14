@@ -6,24 +6,29 @@ instructions and bracketed point counts.
 ## Logistics
 
 ### Did you successfully implement everything that was requested?
+
 _Answer "Yes", or state here which parts did not work or which tests did not
 pass._ [1 point]
+Yes
 
 ### How long did the assignment take?
 
 _Rather than giving a range, if you are unsure, give the average of the range._
 [1 point]
+The assignment took about 2 hours.
 
 ### Who did you work with and how?
 
 _Discussing the assignment with people not on your team is fine as long as you
 don't share code. Please state whether you attended any office hours._ [1 points]
+I worked with Ricardo de Guzman as a pair programmer. I did not attend any office hours.
 
 ### What resources did you use?
 
 _Please give specific URLs (not "Stack Overflow" or "Google") and state which
 ones were particularly helpful. State whether you used AI and, if so, which
 tools you used and how you used them._ [2 points]
+We used Piazza, lecture slides, and Kotlin libraries.
 
 ## Minecraft
 
@@ -39,6 +44,11 @@ _Give **one or more paragraphs** answering these questions:_
 * How do you feel about your progress and understanding?
 
 _There are no wrong (honest) answers._ [5 points]
+I have played thousands of hours of Minecraft. I prefer survival mode. I enjoy RPGs and Platformers.
+I added a passive cow mob to this game. I had a few bugs with the Player.tick() method, it was just a lot
+of getting syntax right. I enjoyed working with existing code and documentation because it forced me to
+truly understand the program. I feel that my progress and understanding is going well. It's just about time
+management for doing assignments and stuyding.
 
 ## Reflections
 
@@ -52,3 +62,6 @@ assignment, including answers to all of these questions:_
 _Constructive and actionable suggestions for improving assignments, office
 hours, and lecture are always welcome._
 [5 points]
+The most difficult part of the assignment was iterating the Player.tick() method because of getting correct
+syntax. The most rewarding part of the assignment was seeing all the mobs and keys work. I learned
+about iterating classes and how classes work.
