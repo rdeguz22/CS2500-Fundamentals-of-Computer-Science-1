@@ -1,14 +1,17 @@
+import Option.Companion.offerOptions
 import masecla.reddit4j.client.Reddit4J
 import masecla.reddit4j.client.UserAgentBuilder
 import masecla.reddit4j.objects.RedditComment
 import masecla.reddit4j.objects.RedditPost
 import masecla.reddit4j.objects.subreddit.RedditSubreddit
+import javax.naming.AuthenticationException
 import kotlin.system.exitProcess
+import java.net.SocketException
 
 // These are used for creating the user agent.
 // You should change AUTHOR.
 private const val APP_NAME = "Fundies Homework 11"
-private const val AUTHOR = "REPLACE"
+private const val AUTHOR = "Douglas Conrad"
 private const val VERSION = "0.1"
 
 /**
@@ -20,12 +23,14 @@ object Connection {
     private val redditClient: Reddit4J = Reddit4J.rateLimited()
 
     init {
-        redditClient.username = USERNAME
-        redditClient.password = PASSWORD
-        redditClient.clientId = CLIENT_ID
-        redditClient.clientSecret = CLIENT_SECRET
-        redditClient.setUserAgent(userAgent)
-        redditClient.connect()
+        redditClient.apply {
+            username = USERNAME
+            password = PASSWORD
+            clientId = CLIENT_ID
+            clientSecret = CLIENT_SECRET
+            setUserAgent(userAgent)
+            connect()
+        }
     }
 
     /**
@@ -40,6 +45,7 @@ object Connection {
     fun getSubreddit(subredditName: String): RedditSubreddit {
         return redditClient.getSubreddit(subredditName)
     }
+
 
     /**
      * Gets posts from [subreddit].
@@ -58,6 +64,7 @@ object Connection {
     }
 }
 
+
 /**
  * An option to present to the user.
  *
@@ -73,34 +80,55 @@ class Option(val text: String, val function: () -> Unit) {
          */
         fun offerOptions(options: List<Option>) {
             val allOptions = listOf(
-                Option("Quit", function = { exitProcess(0) })
+                Option("Quit", function = { quit() })
             ) + options + listOf(
                 Option("Select a subreddit", function = { selectSubreddit() })
             )
-            println("Select an option: ")
-            for (i in allOptions.indices) {
-                println("\t$i. ${allOptions[i].text}")
+            try {
+                println("Select an option: ")
+                for (i in allOptions.indices) {
+                    println("\t$i. ${allOptions[i].text}")
+                }
+                val input = readln().toInt()
+                allOptions[input].function()
+
+            } catch (e: SocketException) {
+                println("Connection Error")
+                offerOptions(
+                    listOf(
+                        Option("Try again", function = {})
+                    )
+                )
+
+            } catch (e: IllegalArgumentException) {
+                println("Invalid input, try again:")
+                offerOptions(options)
+            } catch (e: IndexOutOfBoundsException) {
+                println("Input not in options, try again by inputting an available option:")
+                offerOptions(options)
             }
-            val input = readln().toInt()
-            allOptions[input].function()
+
         }
 
         private fun showPostAuthor(posts: List<RedditPost>, postNumber: Int) {
             println("Post author: ${posts[postNumber].author}")
-            offerOptions(
-                listOf(
-                    Option("Show post again", function = { showPost(posts, postNumber) }),
-                    Option("Check for comments", function = { checkForComments(posts, postNumber) }),
-                    Option("Show next post", function = { showPost(posts, postNumber + 1) }),
-                )
+            val options = mutableListOf<Option>(
+                Option("Show post again", function = { showPost(posts, postNumber) }),
+                Option("Check for comments", function = { checkForComments(posts, postNumber) })
             )
+            if (postNumber + 1 != posts.size) {
+                options.add(Option("Show next post", function = { showPost(posts, postNumber + 1) }))
+            }
+            offerOptions(options)
         }
 
         private fun checkForComments(posts: List<RedditPost>, postNumber: Int) {
             val options = mutableListOf(
                 Option("Show post author", function = { showPostAuthor(posts, postNumber) }),
-                Option("Show next post", function = { showPost(posts, postNumber + 1) }),
             )
+            if (postNumber + 1 != posts.size) {
+                options.add(Option("Show next post", function = { showPost(posts, postNumber + 1) }))
+            }
             val comments: List<RedditComment> = Connection.getComments(posts[postNumber])
             println(
                 when (comments.size) {
@@ -110,7 +138,10 @@ class Option(val text: String, val function: () -> Unit) {
                 }
             )
             if (comments.isNotEmpty()) {
-                options.add(0, Option("Show first comment", function = { showComment(posts, postNumber, comments, 0) }))
+                options.add(
+                    0,
+                    Option("Show first comment", function = { showComment(posts, postNumber, comments, 0) })
+                )
             }
             offerOptions(options)
         }
@@ -124,19 +155,33 @@ class Option(val text: String, val function: () -> Unit) {
 
         private fun showPost(posts: List<RedditPost>, postNumber: Int) {
             displayPost(posts[postNumber])
-            offerOptions(
-                listOf(
-                    Option("Show post author", function = { showPostAuthor(posts, postNumber) }),
-                    Option("Check for comments", function = { checkForComments(posts, postNumber) }),
-                    Option("Show next post", function = { showPost(posts, postNumber + 1) }),
-                )
+            val options = mutableListOf<Option>(
+                Option("Show post author", function = { showPostAuthor(posts, postNumber) }),
+                Option("Check for comments", function = { checkForComments(posts, postNumber) })
             )
+            if (postNumber + 1 != posts.size) {
+                options.add(Option("Show next post", function = { showPost(posts, postNumber + 1) }))
+            }
+            offerOptions(options)
         }
 
         private fun showComment(
             posts: List<RedditPost>, postNumber: Int, comments: List<RedditComment>, commentNumber: Int
         ) {
-            TODO("Student must write.")
+            println("Comment: ${comments[commentNumber]}")
+            val options = mutableListOf<Option>(
+                Option(
+                    "Show comment author",
+                    function = { showCommentAuthor(posts, postNumber, comments, commentNumber) }),
+                Option("Show post again", function = { showPost(posts, postNumber) }),
+            )
+            if (postNumber + 1 != posts.size) {
+                options.add(Option("Show next post", function = { showPost(posts, postNumber + 1) }))
+            }
+            if (commentNumber + 1 != posts.size) {
+                Option("Show next comment", function = { showComment(posts, postNumber, comments, commentNumber + 1) })
+            }
+            offerOptions(options)
         }
 
         private fun showCommentAuthor(
@@ -144,11 +189,15 @@ class Option(val text: String, val function: () -> Unit) {
         ) {
             println("Comment Author: ${comments[commentNumber].author}")
             val options = mutableListOf<Option>(
-                Option("Show post again", function = { showPost(posts, postNumber + 1) })
+                Option("Show post again", function = { showPost(posts, postNumber) }),
             )
             if (postNumber + 1 != posts.size) {
-                options.add(Option("Show post again", function = { showPost(posts, postNumber + 1) }))
+                options.add(Option("Show next post", function = { showPost(posts, postNumber + 1) }))
             }
+            if (commentNumber + 1 != posts.size) {
+                Option("Show next comment", function = { showComment(posts, postNumber, comments, commentNumber + 1) })
+            }
+            offerOptions(options)
         }
 
         private fun quit() {
@@ -175,11 +224,21 @@ class Option(val text: String, val function: () -> Unit) {
                     )
                 )
             }
+
+
         }
     }
 }
 
 fun main() {
-    println("Hello, ${Connection.userName}.")
-    Option.offerOptions(emptyList())
+    try {
+        println("Hello, ${Connection.userName}.")
+        offerOptions(emptyList())
+    } catch (e: ExceptionInInitializerError) {
+        println("Error: ${e.cause} \nTerminating program. Goodbye!")
+        exitProcess(1)
+    } catch (e: AuthenticationException) {
+        println("Invalid credentials")
+        exitProcess(1)
+    }
 }
