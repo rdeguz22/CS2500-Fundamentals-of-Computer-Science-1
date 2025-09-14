@@ -81,10 +81,8 @@ class WordleGame(
     val secretWord: String,
 ) {
     val guesses: MutableList<String> = mutableListOf()
-
-    val numGuesses
+    val numGuesses: Int
         get() = guesses.size
-
     val wordFound: Boolean
         get() = if (secretWord in guesses) true else false
 
@@ -101,14 +99,10 @@ class WordleGame(
     fun makeGuess(guess: String): String {
         require(guess.length == secretWord.length)
         val sb = StringBuilder()
-        for (idx in secretWord.indices) {
-            if (guess[idx].uppercaseChar() == secretWord[idx].uppercaseChar()) {
-                sb.append('*')
-            } else if (guess[idx].uppercaseChar() in secretWord) {
-                sb.append('+')
-            } else {
-                sb.append('.')
-            }
+        for (ch in secretWord.indices) {
+            if (guess[ch].uppercaseChar() == secretWord[ch]) sb.append('*')
+            else if (guess[ch].uppercaseChar() in secretWord) sb.append('+')
+            else sb.append('.')
         }
         // If guess has not been played this game, add it to guesses.
         // Otherwise, it doesn't count as a new guess, but you should
@@ -117,6 +111,7 @@ class WordleGame(
         // Calculate and return the match string.
         return sb.toString()
     }
+
 }
 
 /**
@@ -129,8 +124,7 @@ fun playGame(wordLength: Int) {
     val words = readWordsFromFile(wordLength)
     // Get a random word from the list. Useful library functions are linked
     // in the Canvas assignment.
-    var state = true
-    while (state) {
+    while (true) {
         val randomWord = words.random()
         // Create a WordleGame with the random word.
         val game = WordleGame(randomWord.toString())
@@ -147,10 +141,10 @@ fun playGame(wordLength: Int) {
         // 1. Tell the player that they won.
         // 2. Say how many guesses it took to correctly guess the word.
         // 3. Print their guesses.
-        println("You found the word! It took ${game.guesses.size} guess/es. You guessed ${game.guesses.toString()}.")
+        println("You found the word! It took ${game.guesses.size} guess/es. You guessed: ${game.guesses.toString()}")
         println("Play again? y/n")
-        var playAgain = readln()
-        if (playAgain.lowercase() == "yes" || playAgain.lowercase() == "y") state = true else state = false
+        val playAgain = readln()
+        if (playAgain.lowercase() == "yes" || playAgain.lowercase() == "y") continue else break
     }
 }
 
@@ -193,17 +187,17 @@ fun runTests4() {
     assertEquals(0, game.numGuesses)
     assertFalse(game.wordFound)
     assertEquals("....", game.makeGuess("FGHI"))
-    assertEquals("++++", game.makeGuess("DCBA"))
+    assertEquals("++*+", game.makeGuess("BDCA"))
     assertEquals(".*++", game.makeGuess("ZBDC"))
     assertFalse(game.wordFound)
     assertEquals(3, game.numGuesses)
-    assertEquals("....", game.makeGuess("FEHI"))
-    assertEquals(4, game.numGuesses)
+    assertEquals("....", game.makeGuess("FGHI"))
+    assertEquals(3, game.numGuesses)
     assertEquals("****", game.makeGuess("ABCD"))
-    assertEquals(5, game.numGuesses)
+    assertEquals(4, game.numGuesses)
     assertTrue(game.wordFound)
     assertEquals(
-        mutableListOf("FGHI", "DCBA", "ZBDC", "FEHI", "ABCD"),
+        mutableListOf("FGHI", "BDCA", "ZBDC", "ABCD"),
         game.guesses,
     )
 }
@@ -213,8 +207,8 @@ fun runTests3() {
     assertEquals(0, game.numGuesses)
     assertFalse(game.wordFound)
     assertEquals("...", game.makeGuess("FGH"))
-    assertEquals("..+", game.makeGuess("EDA"))
-    assertEquals(".*.", game.makeGuess("ZBE"))
+    assertEquals("++*", game.makeGuess("BAC"))
+    assertEquals(".*+", game.makeGuess("ZBA"))
     assertFalse(game.wordFound)
     assertEquals(3, game.numGuesses)
     assertEquals("...", game.makeGuess("FGH"))
@@ -223,7 +217,7 @@ fun runTests3() {
     assertEquals(4, game.numGuesses)
     assertTrue(game.wordFound)
     assertEquals(
-        mutableListOf("FGH", "EDA", "ZBE", "ABC"),
+        mutableListOf("FGH", "BAC", "ZBA", "ABC"),
         game.guesses,
     )
 }
@@ -232,18 +226,18 @@ fun runTests2() {
     val game = WordleGame("AB")
     assertEquals(0, game.numGuesses)
     assertFalse(game.wordFound)
-    assertEquals("..", game.makeGuess("IJ"))
-    assertEquals("*.", game.makeGuess("AI"))
-    assertEquals(".*", game.makeGuess("FB"))
+    assertEquals("..", game.makeGuess("FG"))
+    assertEquals("++", game.makeGuess("BA"))
+    assertEquals(".*", game.makeGuess("ZB"))
     assertFalse(game.wordFound)
+    assertEquals(3, game.numGuesses)
+    assertEquals("..", game.makeGuess("FG"))
     assertEquals(3, game.numGuesses)
     assertEquals("**", game.makeGuess("AB"))
     assertEquals(4, game.numGuesses)
-    assertEquals("..", game.makeGuess("DE"))
-    assertEquals(5, game.numGuesses)
     assertTrue(game.wordFound)
     assertEquals(
-        mutableListOf("IJ", "AI", "FB", "AB", "DE"),
+        mutableListOf("FG", "BA", "ZB", "AB"),
         game.guesses,
     )
 }
@@ -252,18 +246,17 @@ fun runTests1() {
     val game = WordleGame("A")
     assertEquals(0, game.numGuesses)
     assertFalse(game.wordFound)
-    assertEquals(".", game.makeGuess("p"))
-    assertEquals(".", game.makeGuess("B"))
-    assertEquals(".", game.makeGuess("Z"))
+    assertEquals(".", game.makeGuess("F"))
     assertFalse(game.wordFound)
-    assertEquals(3, game.numGuesses)
-    assertEquals(".", game.makeGuess("I"))
-    assertEquals(4, game.numGuesses)
+    assertEquals(1, game.numGuesses)
+    assertEquals(".", game.makeGuess("G"))
+    assertEquals(2, game.numGuesses)
     assertEquals("*", game.makeGuess("A"))
-    assertEquals(5, game.numGuesses)
+    assertEquals(3, game.numGuesses)
     assertTrue(game.wordFound)
     assertEquals(
-        mutableListOf("P", "B", "Z", "I", "A"),
+        mutableListOf("F", "G", "A"),
         game.guesses,
     )
+
 }
