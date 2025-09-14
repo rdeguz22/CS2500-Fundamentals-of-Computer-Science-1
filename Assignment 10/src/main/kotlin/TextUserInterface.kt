@@ -5,8 +5,8 @@ class TextUserInterface : UserInterface {
         // This should prompt the user for a guess, input it,
         // convert it to all capital letters, and return it.
         // You do not need to validate it.
-        println("Enter your guess: ")
-        return readlnOrNull()?.uppercase() ?: ""
+        println("Input guess: ")
+        return readln().uppercase()
     }
 
     override fun showError(msg: String) {
@@ -16,13 +16,12 @@ class TextUserInterface : UserInterface {
 
     override fun showFeedback(guess: String, matchString: String) {
         // This should print the guess and the matchString.
-        println("Your guess: $guess")
-        println("Feedback: $matchString")
+        println("$guess -> $matchString")
     }
 
     override fun showLoss(secretWord: String) {
         // This should tell the user what the secret word is.
-        println("You lost. The secret word was $secretWord")
+        println("Secret word: $secretWord")
     }
 
     override fun showWin(numGuesses: Int) {
